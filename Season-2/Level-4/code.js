@@ -25,7 +25,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 app.post("/ufo/upload", upload.single("file"), (req, res) => {
-  if (!req.file) {
+  return res.status(418).send("I'm a teapot.");
+
+  /*if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
 
@@ -34,7 +36,7 @@ app.post("/ufo/upload", upload.single("file"), (req, res) => {
   const uploadedFilePath = path.join(__dirname, req.file.originalname);
   fs.writeFileSync(uploadedFilePath, req.file.buffer);
 
-  res.status(200).send("File uploaded successfully.");
+  res.status(200).send("File uploaded successfully.");*/
 });
 
 app.post("/ufo", (req, res) => {
@@ -46,9 +48,9 @@ app.post("/ufo", (req, res) => {
   } else if (contentType === "application/xml") {
     try {
       const xmlDoc = libxmljs.parseXml(req.body, {
-        replaceEntities: true,
-        recover: true,
-        nonet: false,
+        replaceEntities: false,
+        recover: false,
+        nonet: true,
       });
 
       console.log("Received XML data from XMLon:", xmlDoc.toString());
@@ -69,7 +71,9 @@ app.post("/ufo", (req, res) => {
         xmlDoc.toString().includes('SYSTEM "') &&
         xmlDoc.toString().includes(".admin")
       ) {
-        extractedContent.forEach((command) => {
+        return res.status(400).send("Invalid XML");
+        // This comments makes me wary of the code below
+        /*extractedContent.forEach((command) => {
           exec(command, (err, output) => {
             if (err) {
               console.error("could not execute command: ", err);
@@ -78,7 +82,7 @@ app.post("/ufo", (req, res) => {
             console.log("Output: \n", output);
             res.status(200).set("Content-Type", "text/plain").send(output);
           });
-        });
+        });*/
       } else {
         res
           .status(200)
