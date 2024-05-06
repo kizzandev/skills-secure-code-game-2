@@ -15,6 +15,11 @@ var CryptoAPI = (function() {
 			size: 20,
 			block: 64,
 			hash: function(s) {
+				// hack 1 is an object, therefore block that?
+				if (typeof s !== "string") {
+					throw "Error: only strings as input.";
+				}
+
 				var len = (s += '\x80').length,
 					blocks = len >> 6,
 					chunk = len & 63,
@@ -22,7 +27,22 @@ var CryptoAPI = (function() {
 					i = 0,
 					j = 0,
 					H = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0],
-					w = [];
+					// hack 3
+					// HINT: The array "w" is initialised as an empty array on line 36, any opinions?
+					// HACK: Array.prototype.__defineSetter__("0", function() { alert('Exploit 3'); }); CryptoAPI.sha1.hash("abc");
+					// w = [0]; // this works? Ok.
+
+					// From solution because I do not fully get it:
+					w = [
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+					];
 					
 				while (chunk++ != 56) {
 					s += "\x00";
@@ -53,6 +73,12 @@ var CryptoAPI = (function() {
 			_round: function(H, w) { }
 		} // End "sha1"
 	}; // End "API"
+
+	// hack 2 is modifying the _round function
+	// solution: make _round read-only
+	Object.defineProperty(API.sha1, '_round', {
+		writable: false
+	})
 
 	return API; // End body of anonymous function
 })(); // End "CryptoAPI"
